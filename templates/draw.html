@@ -10,12 +10,13 @@
         style="border:1px solid #000000">
 </canvas>
 <div>
-  <video id="video" style="width: 400px; height: 400px; border: 2px solid black; display: none;"  autoplay controls loop></video>
+  <video id="video1" style="width: 400px; height: 400px; border: 2px solid black; display: none;"  autoplay controls loop></video>
+  <video id="video2" style="width: 400px; height: 400px; border: 2px solid black; display: none;"  autoplay controls loop></video>
 </div>
 </div>
 <div style="display: inline-block; margin-left: 0px">
   <div style="display: flex;  width:402px; justify-content: space-between;">
-  <!-- <button id="pretify" class="btn btn-info" style="padding: 8px 8px; background-color: #16a34a; color: white; margin: 4px 0; font-size: 20px;">Artify</button> -->
+  <button id="pretify" class="btn btn-info" style="padding: 8px 8px; background-color: #16a34a; color: white; margin: 4px 0; font-size: 20px;">Artify</button>
   <button class="go_again" id="go_again" class="btn btn-info" style="padding: 8px 8px; background-color: #dc2626; color: white; margin: 4px 0; font-size: 20px;">Go again!</button>
 </div>
   <!-- <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button><br>
@@ -256,7 +257,8 @@ window.addEventListener('click', function() {
   }
 
   
-  const vidTag = $("video");
+  const vid1Tag = $("video1");
+  const vid2Tag = $("video2");
   async function prettify() {
     statusDiv.innerText = "Status: Processing...";
     const png = c.toDataURL('image/png');
@@ -265,8 +267,11 @@ window.addEventListener('click', function() {
         method: "POST",
         body: png
       })
-      vidTag.style.display = "";
-      vidTag.src = await result.text();
+      const urls = JSON.parse(await result.text());
+      vid1Tag.style.display = "";
+      vid2Tag.style.display = "";
+      vid1Tag.src = urls[0];
+      vid2Tag.src = urls[1];
       statusDiv.innerText = "Status: Arted!";
 
     } catch(e) {
@@ -276,10 +281,13 @@ window.addEventListener('click', function() {
       
     }
   }
-  // $("pretify").onclick = async function() {
-  //   countdownRunning = false;
-  //   prettify();
-  // }
+  if ($("pretify")) {
+    $("pretify").onclick = async function() {
+      countdownRunning = false;
+      prettify();
+    }
+
+  }
 
   $("go_again").addEventListener("click", function() {
     window.location.reload();
