@@ -3,12 +3,23 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/fabric.js/1.6.5/fabric.min.js"></script>
 </head>
 <body>
-<canvas id="c" width="300" height="300" 
+  <h1>Paint me a person!</h1>
+  <div id="status" style="font-size: 1.5rem;">Status: Waiting for art!!</div>
+  <div style="display: flex;">
+<canvas id="c" width="400" height="400" 
         style="border:1px solid #000000">
 </canvas>
-<div style="display: inline-block; margin-left: 10px">
-  <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button><br>
-  <button id="clear-canvas" class="btn btn-info">Clear</button><br>
+<div>
+  <video id="video" style="width: 400px; height: 400px; border: 2px solid black; display: none;"  autoplay controls loop></video>
+</div>
+</div>
+<div style="display: inline-block; margin-left: 0px">
+  <div style="display: flex;  width:402px; justify-content: space-between;">
+  <!-- <button id="pretify" class="btn btn-info" style="padding: 8px 8px; background-color: #16a34a; color: white; margin: 4px 0; font-size: 20px;">Artify</button> -->
+  <button class="go_again" id="go_again" class="btn btn-info" style="padding: 8px 8px; background-color: #dc2626; color: white; margin: 4px 0; font-size: 20px;">Go again!</button>
+</div>
+  <!-- <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button><br>
+  <button id="clear-canvas" class="btn btn-info">Clear</button><br> -->
 
   <div id="drawing-mode-options">
     <label for="drawing-mode-selector">Mode:</label>
@@ -41,13 +52,36 @@
     <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset"><br>
   </div>
 </div>
+
 <script>
 var $ = function(id){return document.getElementById(id)};
+let countdownRunning = false
+let didTriggerCountdown = false;
+let countdown = 30;
+setInterval(() => {
+  if (countdownRunning) {
+    countdown = Math.max(0, countdown - 1);
+    statusDiv.innerText = `Status: Waiting for art. ${countdown} sec remaining!`;
+    if (countdown === 0) {
+      countdownRunning = false;
+      prettify();
+    }
+
+  }
+}, 1000)
+
+window.addEventListener('click', function() {
+  if (didTriggerCountdown) return;
+  countdownRunning = true;
+  didTriggerCountdown = true;
+});
 
   var canvas = this.__canvas = new fabric.Canvas('c', {
-    isDrawingMode: true
+    isDrawingMode: true,
+    backgroundColor: '#FFFFFF',
   });
 
+  const statusDiv = $("status");
   fabric.Object.prototype.transparentCorners = false;
 
   var drawingModeEl = $('drawing-mode'),
@@ -59,19 +93,19 @@ var $ = function(id){return document.getElementById(id)};
       drawingShadowOffset = $('drawing-shadow-offset'),
       clearEl = $('clear-canvas');
 
-  clearEl.onclick = function() { canvas.clear() };
+  // clearEl.onclick = function() { canvas.clear() };
   
-  drawingModeEl.onclick = function() {
-    canvas.isDrawingMode = !canvas.isDrawingMode;
-    if (canvas.isDrawingMode) {
-      drawingModeEl.innerHTML = 'Cancel drawing mode';
-      drawingOptionsEl.style.display = '';
-    }
-    else {
-      drawingModeEl.innerHTML = 'Enter drawing mode';
-      drawingOptionsEl.style.display = 'none';
-    }
-  };
+  // drawingModeEl.onclick = function() {
+  //   canvas.isDrawingMode = !canvas.isDrawingMode;
+  //   if (canvas.isDrawingMode) {
+  //     drawingModeEl.innerHTML = 'Cancel drawing mode';
+  //     drawingOptionsEl.style.display = '';
+  //   }
+  //   else {
+  //     drawingModeEl.innerHTML = 'Enter drawing mode';
+  //     drawingOptionsEl.style.display = 'none';
+  //   }
+  // };
 
   if (fabric.PatternBrush) {
     var vLinePatternBrush = new fabric.PatternBrush(canvas);
@@ -221,8 +255,49 @@ var $ = function(id){return document.getElementById(id)};
     });
   }
 
-  <button id="pretify" class="btn btn-info">Prettify</button>
+  
+  const vidTag = $("video");
+  async function prettify() {
+    statusDiv.innerText = "Status: Processing...";
+    const png = c.toDataURL('image/png');
+    try {
+      const result = await fetch("/save", {
+        method: "POST",
+        body: png
+      })
+      vidTag.style.display = "";
+      vidTag.src = await result.text();
+      statusDiv.innerText = "Status: Arted!";
+
+    } catch(e) {
+      console.log(e);
+      statusDiv.innerText = "Status: Arting failed :(";
+
+      
+    }
+  }
+  // $("pretify").onclick = async function() {
+  //   countdownRunning = false;
+  //   prettify();
+  // }
+
+  $("go_again").addEventListener("click", function() {
+    window.location.reload();
+  });
+    
+    // var json = JSON.stringify(canvas);
+    // json = js_beautify(json);
+    // $("json").value = json;
 
 </script>
 </body>
 </html>
+
+<style>
+  body {
+    background-color: #fafaf9;
+  }
+  * {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+</style>
