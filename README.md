@@ -1,1 +1,4 @@
 # sketch-demo
+
+
+export REPLICATE_API_TOKEN=5e8542a3f24574d987db5000c484a186cc2a3807
